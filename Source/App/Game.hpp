@@ -2,11 +2,13 @@
 #include <vector>
 
 #include "App.h"
-#include "App.hpp"
-struct TriangleObject final : public App::IAppObject
+
+
+
+struct TriangleObject final
 {
-  virtual ~TriangleObject() = default;
-  void Tick() override {}
+  ~TriangleObject() = default;
+  void Tick() {}
 
   const glVec2 * GetVerticesData() const { return vertices; }
   const glVec3 * GetColorsData() const { return colors; }

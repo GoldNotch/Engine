@@ -6,12 +6,19 @@
 
 #include <App.h>
 #include <GLFW/glfw3.h>
+#include <Graphics.h>
 #include <Logging.hpp>
-#include <RenderingSystem.h>
+#ifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
+#elif defined(__linux__)
+#define GLFW_EXPOSE_NATIVE_X11
+#endif
+
 #include <GLFW/glfw3native.h>
 
 #include "Process.hpp"
+
+GraphicsSystem rendering_system;
 
 void ConsoleLog(LogStatus status, int code, const char * message)
 {
@@ -34,6 +41,10 @@ void ConsoleLog(LogStatus status, int code, const char * message)
   }
 }
 
+void OnResizeWindow(GLFWwindow* window, int width, int height)
+{
+  Invalidate(rendering_system);
+}
 
 int main()
 {
@@ -47,17 +58,23 @@ int main()
     glfwTerminate();
     return -1;
   }
+  glfwSetWindowSizeCallback(window, OnResizeWindow);
 
-  Rendering_SetLoggingFunc(ConsoleLog);
+  Graphics_SetLoggingFunc(ConsoleLog);
   App_SetLoggingFunc(ConsoleLog);
 
-  usRenderingOptions renderOpts;
+  GraphicsSystemConfig renderOpts;
   renderOpts.gpu_autodetect = true;
-  renderOpts.hWindow = glfwGetWin32Window(window);
+#ifdef _WIN32
+  renderOpts.hWnd = glfwGetWin32Window(window);
   renderOpts.hInstance = GetModuleHandle(nullptr);
+#elif defined(__linux__)
+  renderOpts.hWnd = reinterpret_cast<void *>(glfwGetX11Window(window));
+  renderOpts.hInstance = glfwGetX11Display();
+#endif
   renderOpts.required_gpus = 1;
-
-  if (InitRenderingSystem(renderOpts))
+  rendering_system = CreateRenderingSystem(renderOpts);
+  if (!rendering_system)
   {
     std::printf("Failed to init rendering system\n");
     glfwTerminate();
@@ -67,6 +84,8 @@ int main()
   App::MainProcess app_process;
   app_process.Start();
 
+  RenderSceneHandler scene = AcquireRenderScene(rendering_system);
+  app_process.ExecuteWithPause(usApp_InitRenderableScene, scene);
   while (!glfwWindowShouldClose(window))
   {
     glfwPollEvents();
@@ -74,13 +93,11 @@ int main()
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
 
-    RenderSceneHandler scene = AcquireRenderScene();
-    app_process.ExecuteWithPause(usApp_InitRenderableScene, scene);
 
-    RenderFrame();
+    RenderAll(rendering_system, &scene, 1);
   }
-  TerminateRenderingSystem();
 
+  DestroyRenderingSystem(rendering_system);
   glfwTerminate();
   return 0;
 }

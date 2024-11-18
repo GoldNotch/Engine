@@ -22,8 +22,8 @@ extern "C"
 
 
 #define DECLARE_LOGGING_API(ModuleName, ApiCall)                                                   \
-  void ApiCall ModuleName##_SetLoggingFunc(LogFunc func);                                          \
-  void ApiCall ModuleName##_SetLoggingWFunc(wLogFunc func);
+  ApiCall void ModuleName##_SetLoggingFunc(LogFunc func);                                          \
+  ApiCall void ModuleName##_SetLoggingWFunc(wLogFunc func);
 
 #ifdef __cplusplus
 }

@@ -40,16 +40,16 @@ SOFTWARE.
 namespace Core
 {
 
-template<typename Char, size_t Size>
+template<typename TChar, size_t Size>
 class basic_static_string
 {
-  std::array<Char, Size> data;
+  std::array<TChar, Size> data;
 
 public:
   /// @brief default constructor
-  constexpr basic_static_string() { data.fill(static_cast<Char>('\0')); }
+  constexpr basic_static_string() noexcept { data.fill(static_cast<TChar>('\0')); }
   /// @brief constructor from static string literal
-  constexpr basic_static_string(const Char (&str)[Size])
+  constexpr basic_static_string(const TChar (&str)[Size]) noexcept
   {
     std::copy(std::begin(str), std::end(str), begin());
   }
@@ -69,48 +69,51 @@ public:
   constexpr auto crbegin() const noexcept { return data.crbegin(); }
   constexpr auto crend() const noexcept { return data.crend(); }
 
-  constexpr Char & at(size_t idx) { return data[idx]; }
-  constexpr const Char & at(size_t idx) const { return data[idx]; }
-  constexpr Char & operator[](std::size_t idx) { return data[idx]; }
-  constexpr const Char & operator[](std::size_t idx) const { return data[idx]; }
+  constexpr TChar & at(size_t idx) { return data[idx]; }
+  constexpr const TChar & at(size_t idx) const { return data[idx]; }
+  constexpr TChar & operator[](std::size_t idx) { return data[idx]; }
+  constexpr const TChar & operator[](std::size_t idx) const { return data[idx]; }
 
   constexpr bool empty() const noexcept { return length() == 0; }
   constexpr size_t length() const noexcept { return Size - 1; }
-  constexpr Char * c_str() noexcept { return data.data(); }
-  constexpr const Char * c_str() const noexcept { return data.data(); }
-  operator std::basic_string<Char>() const noexcept { return std::basic_string<Char>(data.data()); }
+  constexpr TChar * c_str() noexcept { return data.data(); }
+  constexpr const TChar * c_str() const noexcept { return data.data(); }
+  operator std::basic_string<TChar>() const noexcept
+  {
+    return std::basic_string<TChar>(data.data());
+  }
 
-  constexpr void assign(const basic_static_string<Char, Size> & other) noexcept
+  constexpr void assign(const basic_static_string<TChar, Size> & other) noexcept
   {
     data = other.data;
   }
 
   template<std::size_t Size2>
-  constexpr auto append(const basic_static_string<Char, Size2> & other) const noexcept
+  constexpr auto append(const basic_static_string<TChar, Size2> & other) const noexcept
   {
-    basic_static_string<Char, Size + Size2 - 1> result;
+    basic_static_string<TChar, Size + Size2 - 1> result;
     std::copy(begin(), end(), result.begin());
     std::copy(other.begin(), other.end(), result.begin() + Size - 1);
     return result;
   }
 
   template<std::size_t Size2>
-  constexpr auto append(const Char (&str)[Size2]) const noexcept
+  constexpr auto append(const TChar (&str)[Size2]) const noexcept
   {
-    basic_static_string<Char, Size + Size2 - 1> result;
+    basic_static_string<TChar, Size + Size2 - 1> result;
     std::copy(begin(), end(), result.begin());
     std::copy(std::begin(str), std::end(str), result.begin() + Size - 1);
     return result;
   }
 
   template<std::size_t Size2>
-  constexpr auto operator+(const basic_static_string<Char, Size2> & other) const noexcept
+  constexpr auto operator+(const basic_static_string<TChar, Size2> & other) const noexcept
   {
     return append(other);
   }
 
   template<std::size_t Size2>
-  constexpr auto operator+(const Char (&str)[Size2]) const noexcept
+  constexpr auto operator+(const TChar (&str)[Size2]) const noexcept
   {
     return append(str);
   }
@@ -118,7 +121,7 @@ public:
   /// @brief reverse a string (creates new string)
   constexpr auto reverse() const
   {
-    basic_static_string<Char, Size> result = *this;
+    basic_static_string<TChar, Size> result = *this;
     result.reverse();
     return result;
   }
@@ -130,11 +133,11 @@ public:
   template<size_t Begin, size_t Count>
   constexpr auto substring() const
   {
-    basic_static_string<Char, Count + 1> result;
+    basic_static_string<TChar, Count + 1> result;
     static_assert(Begin + Count <= Size - 1, "Out of range of string");
     auto offset = begin() + Begin;
     std::copy(offset, offset + Count, result.begin());
-    result[Count] = static_cast<Char>('\0');
+    result[Count] = static_cast<TChar>('\0');
     return result;
   }
 
@@ -153,7 +156,7 @@ public:
   }
 
   //template<size_t Size2>
-  //constexpr int compare(const basic_static_string<Char, Size2>& other)
+  //constexpr int compare(const basic_static_string<TChar, Size2>& other)
   //{
   //  int res = Size - Size2;
   //  if (res == 0)
@@ -173,9 +176,9 @@ template<size_t Size>
 using static_wstring = basic_static_string<wchar_t, Size>;
 
 
-template<typename Char, size_t Size>
-std::basic_ostream<Char> & operator<<(std::basic_ostream<Char> & bos,
-                                      const basic_static_string<Char, Size> & str)
+template<typename TChar, size_t Size>
+std::basic_ostream<TChar> & operator<<(std::basic_ostream<TChar> & bos,
+                                       const basic_static_string<TChar, Size> & str)
 {
   bos << str.c_str();
   return bos;

@@ -13,11 +13,11 @@ wLogFunc __st_wlogFunc__ = nullptr;
 } // namespace io::p_detail
 
 #define IMPLEMENT_LOGGING_API(ModuleName, ApiCall)                                                 \
-  void ApiCall ModuleName##_SetLoggingFunc(LogFunc func)                                           \
+  ApiCall void ModuleName##_SetLoggingFunc(LogFunc func)                                           \
   {                                                                                                \
     io::p_detail::__st_logFunc__ = func;                                                           \
   }                                                                                                \
-  void ApiCall ModuleName##_SetLoggingWFunc(wLogFunc func)                                         \
+  ApiCall void ModuleName##_SetLoggingWFunc(wLogFunc func)                                         \
   {                                                                                                \
     io::p_detail::__st_wlogFunc__ = func;                                                          \
   }

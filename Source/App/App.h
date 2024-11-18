@@ -9,7 +9,7 @@
 #else
 #define USAPP_API __declspec(dllimport)
 #endif
-#elif
+#else
 #define USAPP_API
 #endif
 
@@ -21,7 +21,7 @@ extern "C"
 {
 #endif
 
-#include <Scene.h>
+#include <Graphics.h>
 
 
   /// @brief initialize application module
